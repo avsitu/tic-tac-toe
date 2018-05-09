@@ -82,9 +82,9 @@
     <script type="text/babel">
 
         var symbolsMap = {
-            2: ["marking", ""],
-            0: ["marking marking-x", "╳"],
-            1: ["marking marking-o", "◯"]
+            2: ["marking", "32"],
+            0: ["marking marking-x", 9587],
+            1: ["marking marking-o", 9711]
         }
 
         var patterns = [
@@ -127,7 +127,7 @@
             render() {
                 return (
                     <div className="col" onClick={this.handleNewMove}>
-                        <div class={symbolsMap[this.props.marking][0]} id={this.props.id}>{symbolsMap[this.props.marking][1]}</div>
+                        <div class={symbolsMap[this.props.marking][0]} id={this.props.id}>{String.fromCharCode(symbolsMap[this.props.marking][1])}</div>
                     </div>
                 );
             }
@@ -225,7 +225,7 @@
                 return (
                     <div >
                         <h3>TIC TAC TOE</h3>
-                        <p>{symbolsMap[this.state.turn][1]}'s turn | <a href="#" onClick={this.handleReset}>Reset</a></p>
+                        <p>{String.fromCharCode(symbolsMap[this.state.turn][1])}'s turn | <a href="#" onClick={this.handleReset}>Reset</a></p>
                         <div className="board">{rows}</div>
                         <p class="alert alert-success" role="alert" id="message1"></p>
                         <p class="alert alert-info" role="alert" id="message2"></p>
