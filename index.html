@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script crossorigin src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <title>TIC TAC TOE</title>
+    <style>
+        .col {
+            /* content:'\2716'; */
+            padding: 0px;
+            background: white;
+            border: 1px solid rgb(65, 65, 65);
+            height: 72px;
+            cursor: pointer;
+        }
+
+        /* .col:before{
+            content:'';
+            padding:50% 0; 
+            vertical value as  100% equals width
+            display:inline-block;
+        } */
+
+        .marking {
+            /* content: "&times;"; */
+            width: 100%;
+            height: 100%;
+            font-size: 55px;
+            text-align: center;
+            /* align-items: center; */
+            position: absolute;
+            top: -10px;
+            vertical-align: middle;
+        }
+        .marking-x {
+            color: lightblue;
+        }
+
+        .marking-o {
+            color: lightcoral;
+        }
+
+        .alert {
+            /* position: absolute; */
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+        }
+        
+        .board {
+            margin: 0 33%;
+            max-width: 190px;
+        }
+
+        .container {
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container jumbotron" style="width: 600px; height: 450px;" id="container">
+        <!-- <div class="row">
+            <div class="col">
+                <div class="marking marking-x"></div>
+            </div>
+            <div class="col">
+                <div class="marking marking-o"></div>
+            </div>
+            <div class="col">
+                
+            </div>
+        </div> -->                  
+    </div>
+
+
+
+
+    <script type="text/babel">
+
+        var symbolsMap = {
+            2: ["marking", ""],
+            0: ["marking marking-x", "╳"],
+            1: ["marking marking-o", "◯"]
+        }
+
+        var patterns = [
+            //horizontal
+            [0,1,2],
+            [3,4,5],
+            [6,7,8],
+            //vertical
+            [0,3,6],
+            [1,4,7],
+            [2,5,8],
+            //diagonal
+            [0,4,8],
+            [2,4,6]
+        ]
+        // document.querySelector(".marking-x").innerHTML = "&#9587;";
+        // document.querySelector(".marking-o").innerHTML = "&#9711;";
+
+        class Column extends React.Component {
+            constructor(props) {
+                super(props);
+                this.handleNewMove = this.handleNewMove.bind(this);
+            }
+
+            handleNewMove(e) {
+                // console.log(parseInt(e.target.id));
+                if(!this.props.active) {
+                    document.querySelector("#message1").style.display = "none";
+                    document.querySelector("#message2").innerHTML="Game is already over! Reset if you want to play again.";
+                    document.querySelector("#message2").style.display = "block";
+                    return false;
+                }
+
+                else if(this.props.marking == 2)
+                    this.props.onNewMove(parseInt(e.target.id));
+
+
+            }
+
+            render() {
+                return (
+                    <div className="col" onClick={this.handleNewMove}>
+                        <div class={symbolsMap[this.props.marking][0]} id={this.props.id}>{symbolsMap[this.props.marking][1]}</div>
+                    </div>
+                );
+            }
+
+        }
+
+        class Row extends React.Component {
+            constructor(props) {
+                super(props);
+            }
+
+            render() {
+                const cols = [];
+                for(var i = 0; i < 3; i++) {
+                    var id = this.props.row*3+i;
+                    var marking = this.props.boardState[id];
+                    cols.push(<Column key={id+"-"+marking} id={id+"-"+marking} marking={marking} onNewMove={this.props.onNewMove} active={this.props.active}/>);
+                }
+                return (
+                    <div className="row">
+                        {cols}
+                    </div>
+                );
+            }
+
+        }
+        
+        class App extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = {
+                    boardState: new Array(9).fill(2), //2:empty, 0:x, 1:o
+                    // boardState: [1,1,2,2,1,2,1,1,1],
+                    turn: 0,
+                    active: true
+                }
+                this.handleNewMove = this.handleNewMove.bind(this);
+                this.handleReset = this.handleReset.bind(this);
+            }
+
+            processBoard() {
+                // console.log(this.state.boardState);
+                var won = false;                
+                patterns.forEach(pattern => {
+                    var firstMark = this.state.boardState[pattern[0]];
+                    if(firstMark != 2) { //potential win
+                        var marks = this.state.boardState.filter((mark, index)=> {
+                            return (pattern.includes(index) && mark == firstMark) //looks for marks matching the first in pattern's index
+                        }); 
+                        // console.log(marks);
+                        if(marks.length == 3) { //all three marks are same, win state
+                            document.querySelector("#message1").innerHTML = symbolsMap[marks[0]][1]+ " wins!";
+                            document.querySelector("#message1").style.display = "block";
+                            pattern.forEach((index)=> {
+                                var id = index+"-"+firstMark;
+                                document.getElementById(id).parentNode.style.background = "#d4edda";
+                            });
+                            this.setState({active: false});
+                            won = true;
+                        }
+                            
+                    }
+                });  
+                if(!this.state.boardState.includes(2) && !won) {
+                    //no more moves
+                    document.querySelector("#message2").innerHTML = "Game Over - It's a draw";
+                    document.querySelector("#message2").style.display = "block";
+                    this.setState({active: false});
+                }
+            }
+
+            handleReset(e) {
+                e.preventDefault();
+                document.querySelectorAll(".alert").forEach((e)=> e.style.display = "none");
+                this.setState({
+                    boardState: new Array(9).fill(2),
+                    turn: 0,
+                    active: true
+                })
+            }
+
+            handleNewMove(id) {
+                this.setState((prevState) => {
+                    return {boardState: prevState.boardState.slice(0,id).concat(prevState.turn).concat(prevState.boardState.slice(id+1))};
+                }, () => {this.processBoard()});
+
+                this.setState((prevState) => {
+                    return {turn: (prevState.turn+1)%2};
+                }, () => {});
+            }
+
+            render() {
+                const rows = [];
+                for(var i = 0; i < 3; i++) rows.push(<Row row={i} boardState={this.state.boardState} onNewMove={this.handleNewMove} active={this.state.active}/>);
+                return (
+                    <div >
+                        <h3>TIC TAC TOE</h3>
+                        <p>{symbolsMap[this.state.turn][1]}'s turn | <a href="#" onClick={this.handleReset}>Reset</a></p>
+                        <div className="board">{rows}</div>
+                        <p class="alert alert-success" role="alert" id="message1"></p>
+                        <p class="alert alert-info" role="alert" id="message2"></p>
+                    </div>
+                );
+            }
+        }
+
+
+        ReactDOM.render(
+            <App />,
+            document.getElementById('container')
+        );        
+    </script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</body>
+
+
+</html>
