@@ -19,11 +19,11 @@
             /* content: "&times;"; */
             width: 100%;
             height: 100%;
-            font-size: 55px;
+            font-size: 40px;
             text-align: center;
             /* align-items: center; */
-            position: absolute;
-            top: -10px;
+            /* position: absolute; */
+            /* top: -10px; */
             vertical-align: middle;
         }
         .marking-x {
@@ -92,8 +92,6 @@
 
                 else if(this.props.marking == 2)
                     this.props.onNewMove(parseInt(e.target.id));
-
-
             }
 
             render() {
@@ -140,6 +138,8 @@
                 this.handleNewMove = this.handleNewMove.bind(this);
                 this.handleReset = this.handleReset.bind(this);
                 this.handleModeChange = this.handleModeChange.bind(this);
+                this.processBoard = this.processBoard.bind(this);
+                this.makeAIMove = this.makeAIMove.bind(this);
             }
 
             processBoard() {
@@ -170,7 +170,8 @@
                     document.querySelector("#message2").style.display = "block";
                     this.setState({active: false});
                 }
-                else if(this.state.mode=="AI" && this.state.turn == 1) { // AI's turn~
+                else if(this.state.mode=="AI" && this.state.turn == 1 && !won) { // AI's turn~
+                    // setTimeout(this.makeAIMove, 1000);
                     this.makeAIMove();
                 }
             }
@@ -222,12 +223,15 @@
 
             handleNewMove(id) {
                 this.setState((prevState) => {
-                    return {boardState: prevState.boardState.slice(0,id).concat(prevState.turn).concat(prevState.boardState.slice(id+1))};
+                    return {
+                        boardState: prevState.boardState.slice(0,id).concat(prevState.turn).concat(prevState.boardState.slice(id+1)),
+                        turn: (prevState.turn+1)%2
+                    };
                 }, () => {this.processBoard()});
 
-                this.setState((prevState) => {
-                    return {turn: (prevState.turn+1)%2};
-                }, () => {});
+                // this.setState((prevState) => {
+                //     return {turn: (prevState.turn+1)%2};
+                // }, () => {});
             }
 
             handleModeChange(e) {
